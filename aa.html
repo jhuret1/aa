@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jumeaux Julie & Julien 💖</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background-color: #fef6fb;
+    }
+
+    .ticket {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .hidden-message {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5vw;
+      font-weight: bold;
+      color: #e91e63;
+      z-index: 1;
+      text-align: center;
+      pointer-events: none;
+      text-shadow: 1px 1px 2px #fff;
+    }
+
+    .scratch-text {
+      position: absolute;
+      top: 3%;
+      width: 100%;
+      color: white;
+      font-size: 3vw;
+      font-weight: bold;
+      text-align: center;
+      z-index: 3;
+      pointer-events: none;
+      text-shadow: 2px 2px 4px #000;
+      transition: opacity 0.5s ease;
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    #resetBtn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      background-color: #ffccf9;
+      color: #d63384;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 5;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      display: none;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="ticket">
+  <div class="hidden-message">👶💖 Jumeaux Filles 💖👶</div>
+  <canvas id="scratchCanvas"></canvas>
+  <div class="scratch-text" id="scratchText">🐣💝 Grattez ici pour découvrir... 🎀🎁</div>
+  <button id="resetBtn">🔁 Recommencer</button>
+  <audio id="confettiSound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
+  <audio id="bgMusic" src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" loop></audio>
+</div>
+
+<script>
+  const canvas = document.getElementById("scratchCanvas");
+  const ctx = canvas.getContext("2d");
+  const scratchText = document.getElementById("scratchText");
+  const resetBtn = document.getElementById("resetBtn");
+  const confettiSound = document.getElementById("confettiSound");
+  const bgMusic = document.getElementById("bgMusic");
+  let isDrawing = false;
+  let hasStarted = false;
+  let hasTriggered = false;
+
+  function drawScratchLayer() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, "#ffc3a0");
+    gradient.addColorStop(0.5, "#ffb6f9");
+    gradient.addColorStop(1, "#bae1ff");
+
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#ffffffcc";
+    ctx.font = `${Math.floor(canvas.width * 0.06)}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🐣💖💙🎀🎁", canvas.width / 2, canvas.height / 2);
+  }
+
+  window.addEventListener("resize", drawScratchLayer);
+  drawScratchLayer();
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    return { x, y };
+  }
+
+  function startScratch(e) {
+    isDrawing = true;
+    if (!hasStarted) {
+      hasStarted = true;
+      scratchText.style.opacity = "0";
+      bgMusic.play();
+    }
+    scratch(e);
+  }
+
+  function stopScratch() {
+    isDrawing = false;
+  }
+
+  function scratch(e) {
+    if (!isDrawing) return;
+    const { x, y } = getPos(e);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.arc(x, y, 40, 0, Math.PI * 2);
+    ctx.fill();
+    checkScratchPercentage();
+  }
+
+  function checkScratchPercentage() {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let transparent = 0;
+    for (let i = 3; i < imageData.data.length; i += 4) {
+      if (imageData.data[i] === 0) transparent++;
+    }
+
+    const percent = transparent / (canvas.width * canvas.height) * 100;
+    if (percent > 30 && !hasTriggered) {
+      hasTriggered = true;
+      canvas.style.display = "none";
+      resetBtn.style.display = "block";
+      confettiSound.play();
+      triggerConfetti();
+    }
+  }
+
+  canvas.addEventListener("mousedown", startScratch);
+  canvas.addEventListener("mousemove", scratch);
+  canvas.addEventListener("mouseup", stopScratch);
+  canvas.addEventListener("mouseleave", stopScratch);
+  canvas.addEventListener("touchstart", startScratch);
+  canvas.addEventListener("touchmove", scratch);
+  canvas.addEventListener("touchend", stopScratch);
+
+  resetBtn.addEventListener("click", () => {
+    canvas.style.display = "block";
+    resetBtn.style.display = "none";
+    scratchText.style.opacity = "1";
+    hasStarted = false;
+    hasTriggered = false;
+    drawScratchLayer();
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+  });
+
+  function triggerConfetti() {
+    const emojis = ["🎉", "💖", "👶", "🎀", "💝"];
+    for (let i = 0; i < 80; i++) {
+      const confetti = document.createElement("div");
+      confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      confetti.style.position = "fixed";
+      confetti.style.left = `${Math.random() * 100}vw`;
+      confetti.style.top = `${Math.random() * -20}vh`;
+      confetti.style.fontSize = `${Math.random() * 20 + 20}px`;
+      confetti.style.animation = `fall ${Math.random() * 2 + 3}s linear forwards`;
+      confetti.style.zIndex = 10;
+      document.body.appendChild(confetti);
+      setTimeout(() => confetti.remove(), 5000);
+    }
+  }
+</script>
+
+</body>
+</html>
