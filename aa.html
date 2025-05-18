@@ -239,6 +239,8 @@
   </div>
 
   <audio id="confettiSound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
+  <audio id="celebrationSound" src="https://www.soundjay.com/mechanical/sounds/firework-explosion-1.mp3"></audio>
+
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
@@ -249,6 +251,7 @@
     const revealVideo = document.getElementById("revealVideo");
     const playVideoBtn = document.getElementById("playVideoBtn");
     const confettiSound = document.getElementById("confettiSound");
+    const celebrationSound = document.getElementById("celebrationSound");
     const backgroundMusic = document.getElementById("backgroundMusic");
     const playMusicBtn = document.getElementById("playMusicBtn");
     const restartBtn = document.getElementById("restartBtn");
@@ -347,29 +350,29 @@
     img.src = "https://jhuret1.github.io/aa/julienjulie.jpg";
     img.onload = drawScratchLayer;
 
-    function drawScratchLayer() {
-      const frame = document.querySelector('.reveal-frame');
-      canvas.width = frame.clientWidth - 4; // -4 pour éviter les problèmes de bordure
-      canvas.height = frame.clientHeight - 4;
-      ctx.globalCompositeOperation = "source-over";
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawScratchLayer() {
+  const frame = document.querySelector('.reveal-frame');
+  canvas.width = frame.clientWidth - 4; // -4 pour éviter les problèmes de bordure
+  canvas.height = frame.clientHeight - 4;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Centrage et crop portrait
-      const imgRatio = img.width / img.height;
-      const canvasRatio = canvas.width / canvas.height;
-      let sx = 0, sy = 0, sw = img.width, sh = img.height;
-      if (imgRatio > canvasRatio) {
-        sw = img.height * canvasRatio;
-        sx = (img.width - sw) / 2;
-      } else {
-        sh = img.width / canvasRatio;
-        sy = (img.height - sh) / 2;
-      }
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+  // Centrage et crop portrait
+  const imgRatio = img.width / img.height;
+  const canvasRatio = canvas.width / canvas.height;
+  let sx = 0, sy = 0, sw = img.width, sh = img.height;
+  if (imgRatio > canvasRatio) {
+    sw = img.height * canvasRatio;
+    sx = (img.width - sw) / 2;
+  } else {
+    sh = img.width / canvasRatio;
+    sy = (img.height - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
-      // Retrait des emojis bébés sur le ticket à gratter
-      // Cette partie est supprimée pour éviter d'afficher des emojis sur le ticket
-    }
+  // Retrait des emojis bébés sur le ticket à gratter
+  // Cette partie est supprimée pour éviter d'afficher des emojis sur le ticket
+}
 
     window.addEventListener("resize", drawScratchLayer);
 
@@ -470,46 +473,50 @@
     }
 
     // Reveal couleur safe (pas de flash rapide)
-    function launchColorReveal() {
-      (() => {
-        const colors = ['#00cfff', '#a100ff', '#ff00aa'];
-        let index = 0;
-        let start = null;
-        const totalDuration = 6000;
-        const overlay = document.createElement('div');
-        overlay.style.position = 'fixed';
-        overlay.style.top = 0;
-        overlay.style.left = 0;
-        overlay.style.width = '100vw';
-        overlay.style.height = '100vh';
-        overlay.style.zIndex = '999999';
-        overlay.style.transition = 'background-color 1.2s cubic-bezier(.77,0,.18,1)';
-        overlay.style.pointerEvents = 'none';
-        document.body.appendChild(overlay);
+function launchColorReveal() {
+  (() => {
+    const colors = ['#00cfff', '#a100ff', '#ff00aa'];
+    let index = 0;
+    let start = null;
+    const totalDuration = 6000;
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = 0;
+    overlay.style.left = 0;
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.zIndex = '999999';
+    overlay.style.transition = 'background-color 1.2s cubic-bezier(.77,0,.18,1)';
+    overlay.style.pointerEvents = 'none';
+    document.body.appendChild(overlay);
 
-        function flash(timestamp) {
-          if (!start) start = timestamp;
-          const elapsed = timestamp - start;
-          const progress = elapsed / totalDuration;
-          const colorIndex = Math.floor(progress * (colors.length));
-          if (elapsed < totalDuration) {
-            overlay.style.backgroundColor = colors[colorIndex % colors.length];
-            requestAnimationFrame(flash);
-          } else {
-            overlay.style.backgroundColor = '#ff00aa';
-            setTimeout(() => {
-              overlay.remove();
-              triggerConfetti();
-              confettiSound.play().catch(err => {
-                console.warn("Erreur lecture son:", err);
-              });
-              showWinners();
-            }, 800);
-          }
-        }
+    function flash(timestamp) {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const progress = elapsed / totalDuration;
+      const colorIndex = Math.floor(progress * (colors.length));
+      if (elapsed < totalDuration) {
+        overlay.style.backgroundColor = colors[colorIndex % colors.length];
         requestAnimationFrame(flash);
-      })();
+      } else {
+        overlay.style.backgroundColor = '#ff00aa';
+        setTimeout(() => {
+          overlay.remove();
+          triggerConfetti();
+          confettiSound.play().catch(err => {
+            console.warn("Erreur lecture son:", err);
+          });
+          // Jouer le son de célébration supplémentaire
+          celebrationSound.play().catch(err => {
+            console.warn("Erreur lecture son de célébration:", err);
+          });
+          showWinners();
+        }, 800);
+      }
     }
+    requestAnimationFrame(flash);
+  })();
+}
 
     function triggerConfetti() {
       for (let i = 0; i < 5; i++) {
@@ -522,6 +529,11 @@
           });
         }, i * 400);
       }
+
+        // Jouer le son de célébration en plus des applaudissements
+  celebrationSound.play().catch(err => {
+    console.warn("Erreur lecture son de célébration:", err);
+  });
 
       // Confetti supplémentaires sur mobile pour un effet plus impressionnant
       if (isMobile) {
@@ -545,14 +557,66 @@
       "Juliette L", "Roxane", "Maxime", "Paca", "Juju R", "Vincent", "Alba", "Alba", "Rose"
     ];
 
-    function showWinners() {
-      winners.forEach((name, i) => {
-        setTimeout(() => {
-          spawnWinner(name);
-        }, 500 + i * 400);
-      });
-      setTimeout(showFinalMessage, 500 + winners.length * 400 + 2000);
+function showWinners() {
+  // Dessiner les noms des gagnants sur le canvas central
+  //drawWinnersOnCanvas();
+  
+  // Animation des noms qui volent dans l'écran (comportement existant)
+  winners.forEach((name, i) => {
+    setTimeout(() => {
+      spawnWinner(name);
+    }, 500 + i * 400);
+  });
+  
+  setTimeout(showFinalMessage, 500 + winners.length * 400 + 2000);
+}
+
+// Nouvelle fonction pour dessiner les noms sur le canvas
+function drawWinnersOnCanvas() {
+  // Rendre le canvas visible pour y dessiner les noms
+  canvas.style.visibility = "visible";
+  canvas.style.display = "block";
+  
+  // Effacer le canvas et préparer pour dessiner les noms
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = "source-over";
+  
+  // Ajouter un fond dégradé
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, '#ff00aa');
+  gradient.addColorStop(0.5, '#a100ff');
+  gradient.addColorStop(1, '#00cfff');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Titre "Félicitations aux gagnants"
+  ctx.font = `bold ${canvas.width * 0.07}px Poppins, sans-serif`;
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.fillText("Félicitations aux", canvas.width / 2, canvas.height * 0.15);
+  ctx.fillText("gagnants !", canvas.width / 2, canvas.height * 0.23);
+  
+  // Liste des noms
+  ctx.font = `bold ${canvas.width * 0.05}px Poppins, sans-serif`;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+  
+  // Position des noms avec une meilleure distribution
+  const startY = canvas.height * 0.35;
+  const lineHeight = canvas.height * 0.055;
+  
+  winners.forEach((name, index) => {
+    // Limiter à un nombre raisonnable de noms ou réduire la taille pour les afficher tous
+    if (index < 12) {
+      ctx.fillText(name, canvas.width / 2, startY + (index * lineHeight));
+    } else if (index === 12) {
+      ctx.fillText("...", canvas.width / 2, startY + (index * lineHeight));
     }
+  });
+  
+  // Ajouter des petits emojis décoratifs
+  ctx.font = `${canvas.width * 0.08}px Arial`;
+  ctx.fillText("🎀👧👧🎀", canvas.width / 2, canvas.height * 0.9);
+}
 
     function spawnWinner(name) {
       const el = document.createElement("div");
@@ -606,20 +670,23 @@
     }
 
     // Bouton recommencer
-    restartBtn.addEventListener('click', () => {
-      document.querySelectorAll('.final-message, .thanks-message, .winner').forEach(e => e.remove());
-      canvas.style.visibility = "visible";
-      canvas.style.display = "block";
-      scratchText.style.display = "block";
-      scratchText.style.opacity = "1";
-      revealVideo.classList.remove("active");
-      revealVideo.style.display = "none";
-      playVideoBtn.style.display = "none";
-      hasStarted = false;
-      hasTriggered = false;
-      drawScratchLayer();
-      restartBtn.style.display = "none";
-    });
+restartBtn.addEventListener('click', () => {
+  document.querySelectorAll('.final-message, .thanks-message, .winner').forEach(e => e.remove());
+  
+  // Redessiner l'image d'origine au lieu des noms
+  drawScratchLayer();
+  
+  canvas.style.visibility = "visible";
+  canvas.style.display = "block";
+  scratchText.style.display = "block";
+  scratchText.style.opacity = "1";
+  revealVideo.classList.remove("active");
+  revealVideo.style.display = "none";
+  playVideoBtn.style.display = "none";
+  hasStarted = false;
+  hasTriggered = false;
+  restartBtn.style.display = "none";
+});
   </script>
 </body>
 </html>
