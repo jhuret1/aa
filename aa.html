@@ -657,12 +657,12 @@ function drawWinnersOnCanvas() {
     function showFinalMessage() {
       const msg = document.createElement("div");
       msg.className = "final-message";
-      msg.innerHTML = '100% FILLES !<div class="final-emojis">🎀👧👧🎀<br>👧👧👧👧<br>💖💖💖</div>';
+      msg.innerHTML = '100% FILLES !<div class="final-emojis">🎀👧👧🎀<br><br>💖💖💖</div>';
       document.body.appendChild(msg);
 
       const thanks = document.createElement("div");
       thanks.className = "thanks-message";
-      thanks.innerHTML = "Bravo à toutes les gagnants !<br>Merci à tous pour votre soutien et votre enthousiasme 💕";
+      thanks.innerHTML = "<br>Merci à tous pour votre soutien et votre enthousiasme 💕";
       document.body.appendChild(thanks);
 
       // Affiche le bouton recommencer
