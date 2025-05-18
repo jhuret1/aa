@@ -563,6 +563,20 @@ function launchColorReveal() {
         overlays.fill(0.5);
         overlays[2] = 0;
         drawRoulette();
+        
+        // Une fois la roulette terminée, lancer les festivités
+        setTimeout(() => {
+          // Supprimer le canvas de la roulette après un petit délai
+          canvas.style.opacity = 0;
+          setTimeout(() => canvas.remove(), 1000);
+          
+          // Déclencher les confettis
+          triggerConfetti();
+          
+          // Lancer l'affichage des gagnants
+          setTimeout(showWinners, 800);
+        }, 1000);
+        
         return;
       }
 
