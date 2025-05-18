@@ -25,6 +25,9 @@
       z-index: 2;
       padding: 2vw;
       aspect-ratio: 2/3;
+      /* Stabilité pendant le grattage */
+      touch-action: none;
+      user-select: none;
     }
     @media (max-width: 600px) {
       .reveal-frame {
@@ -34,10 +37,10 @@
     }
     .baby-heads {
       position: absolute;
-      left: 50%; top: 50%;
+      left: 0; top: 0;
       width: 100vw; height: 100vh;
       pointer-events: none;
-      z-index: 3;
+      z-index: 1; /* Changé de 3 à 1 pour être sous le ticket */
     }
     .baby-heads span {
       position: absolute;
@@ -81,6 +84,10 @@
       cursor: pointer;
       width: 100%; height: 100%;
       position: relative;
+      /* Stabilité pendant le grattage */
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
     #revealVideo {
       position: absolute;
@@ -123,13 +130,14 @@
     }
     .final-message {
       position: fixed;
-      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      top: 40%; left: 50%; transform: translate(-50%, -50%);
       font-size: 5vw; font-weight: bold; color: #fff;
       text-shadow: 2px 2px 16px #ff00aa, 0 0 32px #a100ff;
       z-index: 9999;
       animation: blink 1.2s infinite alternate;
       text-align: center;
       pointer-events: none;
+      width: 90%;
     }
     @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0.7; } }
     .final-emojis {
@@ -139,7 +147,7 @@
     }
     .thanks-message {
       position: fixed;
-      bottom: 5vw; left: 50%; transform: translateX(-50%);
+      bottom: 15vh; left: 50%; transform: translateX(-50%);
       font-size: 2vw; color: #fff; background: rgba(0,0,0,0.3);
       padding: 1vw 2vw; border-radius: 2vw; z-index: 9999;
       text-align: center;
@@ -147,21 +155,24 @@
     }
     @media (max-width: 600px) {
       .final-message {
-        font-size: 8vw;
+        font-size: 10vw;
+        top: 30%;
       }
       .final-emojis {
-        font-size: 6vw;
+        font-size: 8vw;
       }
       .thanks-message {
         font-size: 4vw;
         width: 80%;
+        bottom: 20vh;
+        padding: 3vw 4vw;
       }
       .winner {
         font-size: 5vw;
       }
     }
     .music-link, #playMusicBtn, #restartBtn, #playVideoBtn {
-      position: fixed; top: 2vw; left: 2vw; z-index: 10000;
+      position: fixed; top: 2vw; right: 2vw; z-index: 10000; /* Changé left à right pour éloigner du ticket */
       background: #fff; color: #a100ff; font-weight: bold; border-radius: 1vw;
       padding: 0.7vw 1.5vw; text-decoration: none; font-size: 1.2vw;
       box-shadow: 0 2px 12px #a100ff44;
@@ -170,8 +181,9 @@
       cursor: pointer;
     }
     #restartBtn {
-      top: auto; left: 50%; bottom: 2vw; transform: translateX(-50%);
+      top: auto; left: 50%; bottom: 5vh; transform: translateX(-50%);
       display: none;
+      z-index: 20000; /* Augmenté pour être au-dessus de tout */
     }
     #playVideoBtn {
       position: absolute;
@@ -186,9 +198,19 @@
     }
     @media (max-width: 600px) {
       .music-link, #playMusicBtn, #restartBtn {
-        font-size: 3vw;
-        padding: 1.5vw 3vw;
+        font-size: 4vw;
+        padding: 2vw 4vw;
         border-radius: 2vw;
+      }
+      #playMusicBtn {
+        right: 50%;
+        transform: translateX(50%);
+        top: 7vh;
+      }
+      #restartBtn {
+        font-size: 4vw;
+        padding: 2vw 4vw;
+        bottom: 5vh;
       }
     }
     .music-link:hover, #playMusicBtn:hover, #restartBtn:hover, #playVideoBtn:hover { background: #ff00aa; color: #fff; }
@@ -233,6 +255,10 @@
     const babyHeads = document.querySelector('.baby-heads');
     let isDrawing = false, hasStarted = false, hasTriggered = false;
     let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    // Mode passif pour éviter les avertissements et améliorer la stabilité
+    document.addEventListener('touchstart', function() {}, {passive: true});
+    document.addEventListener('touchmove', function() {}, {passive: true});
 
     // Lancer la musique sur clic (autoplay bloqué sinon)
     playMusicBtn.addEventListener('click', () => {
@@ -251,7 +277,7 @@
       });
     });
 
-    // Disperser les emojis autour du ticket
+    // Disperser les emojis autour du ticket - AMÉLIORÉ
     function scatterBabies() {
       babyHeads.innerHTML = '';
       const emojis = [
@@ -264,19 +290,42 @@
         '🎉', '🎉', '🎉', '🎉', '🎁', '🎁', '🎁', '🧩', '🧩', '🧩',
         '🚼', '🚼', '🚼', '🧪', '👨‍👩‍👧', '👨‍👩‍👦‍👦', '👨‍👩‍👧‍👧', '👨‍👩‍👧‍👦', '👪', '👨‍👩‍👦'
       ];
+      
+      // Diviser la page en quatre quadrants pour une distribution plus équilibrée
+      const quadrants = [
+        {minX: 0, maxX: 0.5, minY: 0, maxY: 0.5},     // Haut gauche
+        {minX: 0.5, maxX: 1, minY: 0, maxY: 0.5},     // Haut droite
+        {minX: 0, maxX: 0.5, minY: 0.5, maxY: 1},     // Bas gauche
+        {minX: 0.5, maxX: 1, minY: 0.5, maxY: 1}      // Bas droite
+      ];
+      
+      // Distribuer les emojis également dans chaque quadrant
       for(let i=0; i<emojis.length; i++) {
         const span = document.createElement('span');
         span.textContent = emojis[i];
         
-        // Position vraiment aléatoire sur toute la page
-        const angle = Math.random() * 2 * Math.PI;
-        const distance = Math.random() * 0.8; // 0-80% de la distance maximale
-        const radius = Math.min(window.innerWidth, window.innerHeight) * distance;
-        const cx = window.innerWidth/2;
-        const cy = window.innerHeight/2;
+        // Choisir un quadrant (rotation entre les 4)
+        const quadrant = quadrants[i % 4];
         
-        span.style.left = (cx + Math.cos(angle)*radius) + 'px';
-        span.style.top = (cy + Math.sin(angle)*radius) + 'px';
+        // Position dans ce quadrant
+        const posX = (quadrant.minX + Math.random() * (quadrant.maxX - quadrant.minX)) * window.innerWidth;
+        const posY = (quadrant.minY + Math.random() * (quadrant.maxY - quadrant.minY)) * window.innerHeight;
+        
+        span.style.left = posX + 'px';
+        span.style.top = posY + 'px';
+        
+        // Éviter de mettre des emojis trop près du ticket central
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const distance = Math.sqrt(Math.pow(posX - centerX, 2) + Math.pow(posY - centerY, 2));
+        const minDistance = Math.min(window.innerWidth, window.innerHeight) * 0.15;
+        
+        // Si trop proche du centre, décaler vers l'extérieur
+        if (distance < minDistance) {
+          const angle = Math.atan2(posY - centerY, posX - centerX);
+          span.style.left = (centerX + Math.cos(angle) * minDistance) + 'px';
+          span.style.top = (centerY + Math.sin(angle) * minDistance) + 'px';
+        }
         
         // Taille aléatoire pour les emojis
         const size = 1.5 + Math.random() * 4;
@@ -300,8 +349,8 @@
 
     function drawScratchLayer() {
       const frame = document.querySelector('.reveal-frame');
-      canvas.width = frame.clientWidth;
-      canvas.height = frame.clientHeight;
+      canvas.width = frame.clientWidth - 4; // -4 pour éviter les problèmes de bordure
+      canvas.height = frame.clientHeight - 4;
       ctx.globalCompositeOperation = "source-over";
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -318,17 +367,8 @@
       }
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
-    // Ajout d'emojis bébés sur le ticket à gratter
-      const babyEmojis = ["👧","👦","🍼","👶","🧸","🎀"];
-      for(let i=0; i<6; i++) {
-        ctx.font = `${Math.floor(canvas.width * 0.10)}px Poppins`;
-        ctx.globalAlpha = 0.7;
-        ctx.fillText(babyEmojis[i],
-          (canvas.width/7)*(i+1),
-          canvas.height/7 + Math.sin(i)*canvas.height/10
-        );
-      }
-      ctx.globalAlpha = 1;
+      // Retrait des emojis bébés sur le ticket à gratter
+      // Cette partie est supprimée pour éviter d'afficher des emojis sur le ticket
     }
 
     window.addEventListener("resize", drawScratchLayer);
@@ -341,6 +381,7 @@
     }
 
     function startScratch(e) {
+      e.preventDefault(); // Éviter le comportement par défaut pour plus de stabilité
       isDrawing = true;
       if (!hasStarted) {
         hasStarted = true;
@@ -353,10 +394,11 @@
 
     function scratch(e) {
       if (!isDrawing) return;
+      e.preventDefault(); // Éviter le défilement sur mobile
       const { x, y } = getPos(e);
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
-      ctx.arc(x, y, 40, 0, Math.PI * 2);
+      ctx.arc(x, y, isMobile ? 30 : 40, 0, Math.PI * 2);
       ctx.fill();
       checkScratchPercentage();
     }
@@ -368,18 +410,19 @@
         if (imageData.data[i] === 0) transparent++;
       }
       const percent = transparent / (canvas.width * canvas.height) * 100;
-      if (percent > 30 && !hasTriggered) {
+      if (percent > 25 && !hasTriggered) { // Réduit à 25% pour une expérience plus fluide
         hasTriggered = true;
         showVideo();
       }
     }
 
-    canvas.addEventListener("mousedown", startScratch);
-    canvas.addEventListener("mousemove", scratch);
+    // Prévenir le comportement par défaut pour éviter les problèmes de scroll/bounce
+    canvas.addEventListener("mousedown", startScratch, { passive: false });
+    canvas.addEventListener("mousemove", scratch, { passive: false });
     canvas.addEventListener("mouseup", stopScratch);
     canvas.addEventListener("mouseleave", stopScratch);
-    canvas.addEventListener("touchstart", startScratch);
-    canvas.addEventListener("touchmove", scratch);
+    canvas.addEventListener("touchstart", startScratch, { passive: false });
+    canvas.addEventListener("touchmove", scratch, { passive: false });
     canvas.addEventListener("touchend", stopScratch);
 
     function showVideo() {
@@ -416,6 +459,13 @@
         revealVideo.style.display = "none";
         playVideoBtn.style.display = "none";
         launchColorReveal();
+        
+        // Sortir du mode plein écran après la vidéo
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(err => {
+            console.warn("Erreur en quittant le plein écran:", err);
+          });
+        }
       };
     }
 
@@ -471,6 +521,22 @@
             colors: palette
           });
         }, i * 400);
+      }
+
+      // Confetti supplémentaires sur mobile pour un effet plus impressionnant
+      if (isMobile) {
+        setTimeout(() => {
+          for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+              confetti({
+                particleCount: 80,
+                spread: 120,
+                origin: { y: 0.2 + i * 0.2, x: 0.1 + i * 0.3 },
+                colors: palette
+              });
+            }, i * 300);
+          }
+        }, 1000);
       }
     }
 
