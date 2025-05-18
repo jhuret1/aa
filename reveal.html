@@ -474,106 +474,107 @@ function drawScratchLayer() {
 
     // Reveal couleur safe (pas de flash rapide)
 function launchColorReveal() {
-  (() => {
-    const colors = ['#00cfff', '#a100ff', '#ff00aa'];
-    let index = 0;
-    let start = null;
-    const totalDuration = 6000;
-    const overlay = document.createElement('div');
-    overlay.style.position = 'fixed';
-    overlay.style.top = 0;
-    overlay.style.left = 0;
-    overlay.style.width = '100vw';
-    overlay.style.height = '100vh';
-    overlay.style.zIndex = '999999';
-    overlay.style.transition = 'background-color 1.2s cubic-bezier(.77,0,.18,1)';
-    overlay.style.pointerEvents = 'none';
-    document.body.appendChild(overlay);
-
-    function flash(timestamp) {
-  if (document.getElementById('circle-roulette')) return;
-
-  // Create canvas
-  const canvas = document.createElement('canvas');
-  canvas.id = 'circle-roulette';
-  canvas.width = 300;
-  canvas.height = 300;
-  canvas.style.position = 'fixed';
-  canvas.style.top = '50%';
-  canvas.style.left = '50%';
-  canvas.style.transform = 'translate(-50%, -50%)';
-  canvas.style.zIndex = 999999;
-  canvas.style.pointerEvents = 'none';
-  document.body.appendChild(canvas);
-
-  const ctx = canvas.getContext('2d');
   const colors = ['#00cfff', '#a100ff', '#ff00aa'];
-  const radius = 140;
-  const overlays = [0.5, 0.5, 0.5]; // darkness per sector
-  let highlightIndex = 0;
-  let delay = 300;
-  let elapsed = 0;
-  const totalDuration = 8000;
+  let index = 0;
+  let start = null;
+  const totalDuration = 6000;
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.zIndex = '999999';
+  overlay.style.transition = 'background-color 1.2s cubic-bezier(.77,0,.18,1)';
+  overlay.style.pointerEvents = 'none';
+  document.body.appendChild(overlay);
 
-  function drawRoulette() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
+  function flash(timestamp) {
+    if (document.getElementById('circle-roulette')) return;
 
-    for (let i = 0; i < 3; i++) {
-      const startAngle = (i * Math.PI * 2) / 3;
-      const endAngle = startAngle + (Math.PI * 2) / 3;
+    // Create canvas
+    const canvas = document.createElement('canvas');
+    canvas.id = 'circle-roulette';
+    canvas.width = 300;
+    canvas.height = 300;
+    canvas.style.position = 'fixed';
+    canvas.style.top = '50%';
+    canvas.style.left = '50%';
+    canvas.style.transform = 'translate(-50%, -50%)';
+    canvas.style.zIndex = 999999;
+    canvas.style.pointerEvents = 'none';
+    document.body.appendChild(canvas);
 
-      // Draw sector base color
+    const ctx = canvas.getContext('2d');
+    const colors = ['#00cfff', '#a100ff', '#ff00aa'];
+    const radius = 140;
+    const overlays = [0.5, 0.5, 0.5]; // darkness per sector
+    let highlightIndex = 0;
+    let delay = 300;
+    let elapsed = 0;
+    const totalDuration = 8000;
+
+    function drawRoulette() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      for (let i = 0; i < 3; i++) {
+        const startAngle = (i * Math.PI * 2) / 3;
+        const endAngle = startAngle + (Math.PI * 2) / 3;
+
+        // Draw sector base color
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+
+        // Apply dark overlay
+        ctx.fillStyle = `rgba(0, 0, 0, ${overlays[i]})`;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Center circle
       ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, radius, startAngle, endAngle);
-      ctx.closePath();
-      ctx.fillStyle = colors[i];
-      ctx.fill();
-
-      // Apply dark overlay
-      ctx.fillStyle = `rgba(0, 0, 0, ${overlays[i]})`;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, radius, startAngle, endAngle);
-      ctx.closePath();
+      ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+      ctx.fillStyle = '#111';
       ctx.fill();
     }
 
-    // Center circle
-    ctx.beginPath();
-    ctx.arc(cx, cy, 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#111';
-    ctx.fill();
-  }
+    function highlightNext() {
+      // Reset overlays
+      overlays.fill(0.5);
+      // Highlight current sector
+      overlays[highlightIndex] = 0;
 
-  function highlightNext() {
-    // Reset overlays
-    overlays.fill(0.5);
-    // Highlight current sector
-    overlays[highlightIndex] = 0;
+      drawRoulette();
+
+      highlightIndex = (highlightIndex + 1) % 3;
+      elapsed += delay;
+
+      if (elapsed >= totalDuration) {
+        // Stop on pink (index 2)
+        overlays.fill(0.5);
+        overlays[2] = 0;
+        drawRoulette();
+        return;
+      }
+
+      delay = Math.max(70, delay * 0.85); // accelerate but not too fast
+      setTimeout(highlightNext, delay);
+    }
 
     drawRoulette();
-
-    highlightIndex = (highlightIndex + 1) % 3;
-    elapsed += delay;
-
-    if (elapsed >= totalDuration) {
-      // Stop on pink (index 2)
-      overlays.fill(0.5);
-      overlays[2] = 0;
-      drawRoulette();
-      return;
-    }
-
-    delay = Math.max(70, delay * 0.85); // accelerate but not too fast
     setTimeout(highlightNext, delay);
   }
 
-  drawRoulette();
-  setTimeout(highlightNext, delay);
-})();
+  flash(); // Appel direct à la fonction flash
 }
 
     function triggerConfetti() {
