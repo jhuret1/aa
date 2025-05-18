@@ -18,7 +18,7 @@
       transform: translate(-50%, -50%);
       width: 40vw; max-width: 400px;
       height: 60vw; max-height: 600px;
-      background: linear-gradient(135deg, #00cfff 0%, #a100ff 50%, #ff00reveal 100%);
+      background: linear-gradient(135deg, #00cfff 0%, #a100ff 50%, #ff00aa 100%);
       border-radius: 32px;
       box-shadow: 0 8px 40px #a100ff99;
       display: flex; align-items: center; justify-content: center;
@@ -115,7 +115,7 @@
       color: #fff;
       padding: 0.5em 1.2em;
       border-radius: 2em;
-      background: linear-gradient(90deg, #00cfff, #a100ff, #ff00reveal);
+      background: linear-gradient(90deg, #00cfff, #a100ff, #ff00aa);
       box-shadow: 0 2px 12px #a100ff44;
       opacity: 0;
       z-index: 20;
@@ -132,7 +132,7 @@
       position: fixed;
       top: 40%; left: 50%; transform: translate(-50%, -50%);
       font-size: 5vw; font-weight: bold; color: #fff;
-      text-shadow: 2px 2px 16px #ff00reveal, 0 0 32px #a100ff;
+      text-shadow: 2px 2px 16px #ff00aa, 0 0 32px #a100ff;
       z-index: 9999;
       animation: blink 1.2s infinite alternate;
       text-align: center;
@@ -213,7 +213,7 @@
         bottom: 5vh;
       }
     }
-    .music-link:hover, #playMusicBtn:hover, #restartBtn:hover, #playVideoBtn:hover { background: #ff00reveal; color: #fff; }
+    .music-link:hover, #playMusicBtn:hover, #restartBtn:hover, #playVideoBtn:hover { background: #ff00aa; color: #fff; }
   </style>
 </head>
 <body>
@@ -244,7 +244,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
-    const palette = ['#00cfff', '#a100ff', '#ff00reveal'];
+    const palette = ['#00cfff', '#a100ff', '#ff00aa'];
     const canvas = document.getElementById("scratchCanvas");
     const ctx = canvas.getContext("2d");
     const scratchText = document.getElementById("scratchText");
@@ -475,7 +475,7 @@ function drawScratchLayer() {
     // Reveal couleur safe (pas de flash rapide)
 function launchColorReveal() {
   (() => {
-    const colors = ['#00cfff', '#a100ff', '#ff00reveal'];
+    const colors = ['#00cfff', '#a100ff', '#ff00aa'];
     let index = 0;
     let start = null;
     const totalDuration = 6000;
@@ -499,7 +499,7 @@ function launchColorReveal() {
         overlay.style.backgroundColor = colors[colorIndex % colors.length];
         requestAnimationFrame(flash);
       } else {
-        overlay.style.backgroundColor = '#ff00reveal';
+        overlay.style.backgroundColor = '#ff00aa';
         setTimeout(() => {
           overlay.remove();
           triggerConfetti();
@@ -583,7 +583,7 @@ function drawWinnersOnCanvas() {
   
   // Ajouter un fond dégradé
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#ff00reveal');
+  gradient.addColorStop(0, '#ff00aa');
   gradient.addColorStop(0.5, '#a100ff');
   gradient.addColorStop(1, '#00cfff');
   ctx.fillStyle = gradient;
