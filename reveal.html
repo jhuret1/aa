@@ -475,6 +475,7 @@ function drawScratchLayer() {
     // Reveal couleur safe (pas de flash rapide)
 function launchColorReveal() {
   const colors = ['#00cfff', '#a100ff', '#ff00aa'];
+  const emojis = ['👶', '👧', '👧']; // Emojis pour chaque secteur
   let index = 0;
   let start = null;
   const totalDuration = 6000;
@@ -492,11 +493,11 @@ function launchColorReveal() {
   function flash(timestamp) {
     if (document.getElementById('circle-roulette')) return;
 
-    // Create canvas
+    // Create canvas - plus grand pour une meilleure visibilité
     const canvas = document.createElement('canvas');
     canvas.id = 'circle-roulette';
-    canvas.width = 300;
-    canvas.height = 300;
+    canvas.width = Math.min(window.innerWidth * 0.8, 500); // Adaptatif, max 500px
+    canvas.height = Math.min(window.innerWidth * 0.8, 500);
     canvas.style.position = 'fixed';
     canvas.style.top = '50%';
     canvas.style.left = '50%';
@@ -507,42 +508,59 @@ function launchColorReveal() {
 
     const ctx = canvas.getContext('2d');
     const colors = ['#00cfff', '#a100ff', '#ff00aa'];
-    const radius = 140;
     const overlays = [0.5, 0.5, 0.5]; // darkness per sector
     let highlightIndex = 0;
     let delay = 300;
     let elapsed = 0;
     const totalDuration = 8000;
+    
+    // Fonction pour obtenir le rayon dynamique
+    function radius() {
+      return canvas.width * 0.45; // 90% du diamètre
+    }
 
     function drawRoulette() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
-
+      const r = radius();
+      
       for (let i = 0; i < 3; i++) {
         const startAngle = (i * Math.PI * 2) / 3;
         const endAngle = startAngle + (Math.PI * 2) / 3;
-
-        // Draw sector base color
+        
+        // Sector base color
         ctx.beginPath();
         ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
         ctx.closePath();
         ctx.fillStyle = colors[i];
         ctx.fill();
-
-        // Apply dark overlay
-        ctx.fillStyle = `rgba(0, 0, 0, ${overlays[i]})`;
+        
+        // Emoji only if highlighted
+        if (overlays[i] === 0) {
+          const midAngle = startAngle + (Math.PI * 2) / 6;
+          const emojiX = cx + r * 0.5 * Math.cos(midAngle);
+          const emojiY = cy + r * 0.5 * Math.sin(midAngle);
+          ctx.font = `${canvas.width * 0.09}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#fff'; // bright and visible
+          ctx.fillText(emojis[i], emojiX, emojiY);
+        }
+        
+        // Overlay
         ctx.beginPath();
         ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
         ctx.closePath();
+        ctx.fillStyle = `rgba(0, 0, 0, ${overlays[i]})`;
         ctx.fill();
       }
-
-      // Center circle
+      
+      // Center dot
       ctx.beginPath();
-      ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r * 0.05, 0, Math.PI * 2);
       ctx.fillStyle = '#111';
       ctx.fill();
     }
@@ -559,14 +577,15 @@ function launchColorReveal() {
       elapsed += delay;
 
       if (elapsed >= totalDuration) {
-        // Stop on pink (index 2)
+        // Stop on pink (index 2 - le dernier secteur pour les filles)
         overlays.fill(0.5);
         overlays[2] = 0;
         drawRoulette();
         
         // Une fois la roulette terminée, lancer les festivités
         setTimeout(() => {
-          // Supprimer le canvas de la roulette après un petit délai
+          // Ajouter une animation de disparition progressive
+          canvas.style.transition = 'opacity 1s ease-out';
           canvas.style.opacity = 0;
           setTimeout(() => canvas.remove(), 1000);
           
@@ -575,7 +594,7 @@ function launchColorReveal() {
           
           // Lancer l'affichage des gagnants
           setTimeout(showWinners, 800);
-        }, 1000);
+        }, 1200);
         
         return;
       }
