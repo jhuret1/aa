@@ -3,224 +3,453 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Jumeaux Julie & Julien 💖</title>
+  <title>Time to Reveal...</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      font-family: 'Poppins', sans-serif;
       overflow: hidden;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      background-color: #fef6fb;
+      background: #181828;
     }
-
-    .ticket {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .hidden-message {
+    .reveal-frame {
       position: absolute;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 5vw;
-      font-weight: bold;
-      color: #e91e63;
-      z-index: 1;
-      text-align: center;
-      pointer-events: none;
-      text-shadow: 1px 1px 2px #fff;
-    }
-
-    .scratch-text {
-      position: absolute;
-      top: 3%;
-      width: 100%;
-      color: white;
-      font-size: 3vw;
-      font-weight: bold;
-      text-align: center;
-      z-index: 3;
-      pointer-events: none;
-      text-shadow: 2px 2px 4px #000;
-      transition: opacity 0.5s ease;
-      animation: blink 2s infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40vw; max-width: 400px;
+      height: 60vw; max-height: 600px;
+      background: linear-gradient(135deg, #00cfff 0%, #a100ff 50%, #ff00aa 100%);
+      border-radius: 32px;
+      box-shadow: 0 8px 40px #a100ff99;
+      display: flex; align-items: center; justify-content: center;
       z-index: 2;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
+      padding: 2vw;
+      aspect-ratio: 2/3;
     }
-
-    #resetBtn {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 12px 24px;
-      background-color: #ffccf9;
-      color: #d63384;
-      border: none;
-      border-radius: 30px;
-      font-size: 1.2em;
-      font-weight: bold;
-      cursor: pointer;
-      z-index: 5;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      display: none;
-    }
-
-    @keyframes fall {
-      to {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
+    @media (max-width: 600px) {
+      .reveal-frame {
+        width: 90vw; max-width: 95vw;
+        height: 120vw; max-height: 95vh;
       }
     }
+    .baby-heads {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .baby-heads span {
+      position: absolute;
+      font-size: 2.5vw;
+      user-select: none;
+      filter: drop-shadow(0 2px 4px #a100ff88);
+      animation: babyBounce 2s infinite alternate;
+      opacity: 0.85;
+    }
+    @keyframes babyBounce { to { transform: scale(1.15) rotate(-10deg); } }
+    .scratch-text {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      color: #fff; font-size: 2.2vw; font-weight: bold; z-index: 5;
+      background: rgba(0,0,0,0.35); padding: 1vw 2vw; border-radius: 2vw;
+      box-shadow: 0 2px 12px #a100ff44;
+      animation: bounce 1.5s infinite alternate;
+      pointer-events: none;
+      text-shadow: 2px 2px 8px #a100ff;
+    }
+    @keyframes bounce { to { transform: translate(-50%, -50%) scale(1.08); } }
+    #scratchCanvas {
+      border-radius: 20px;
+      box-shadow: 0 2px 12px #a100ff44;
+      background: #fff;
+      z-index: 4;
+      display: block;
+      margin: 0 auto;
+      cursor: pointer;
+      width: 100%; height: 100%;
+      position: relative;
+    }
+    #revealVideo {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      border-radius: 20px;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      background: #fff;
+      box-shadow: 0 8px 40px #a100ff99;
+      transition: all 1s cubic-bezier(.77,0,.18,1);
+      display: none;
+    }
+    #revealVideo.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1.05) rotate(0deg);
+      display: block;
+    }
+    .winner {
+      position: fixed;
+      font-size: 2.5vw;
+      font-weight: bold;
+      color: #fff;
+      padding: 0.5em 1.2em;
+      border-radius: 2em;
+      background: linear-gradient(90deg, #00cfff, #a100ff, #ff00aa);
+      box-shadow: 0 2px 12px #a100ff44;
+      opacity: 0;
+      z-index: 20;
+      pointer-events: none;
+      animation: winnerIn 2.5s forwards;
+    }
+    @keyframes winnerIn {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .final-message {
+      position: fixed;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-size: 5vw; font-weight: bold; color: #fff;
+      text-shadow: 2px 2px 16px #ff00aa, 0 0 32px #a100ff;
+      z-index: 9999;
+      animation: blink 1.2s infinite alternate;
+      text-align: center;
+      pointer-events: none;
+    }
+    @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0.7; } }
+    .final-emojis {
+      font-size: 3vw; margin-top: 1vw;
+      display: block;
+      text-align: center;
+    }
+    .thanks-message {
+      position: fixed;
+      bottom: 5vw; left: 50%; transform: translateX(-50%);
+      font-size: 2vw; color: #fff; background: rgba(0,0,0,0.3);
+      padding: 1vw 2vw; border-radius: 2vw; z-index: 9999;
+      text-align: center;
+      box-shadow: 0 2px 12px #a100ff44;
+    }
+    .music-link, #playMusicBtn, #restartBtn {
+      position: fixed; top: 2vw; left: 2vw; z-index: 10000;
+      background: #fff; color: #a100ff; font-weight: bold; border-radius: 1vw;
+      padding: 0.7vw 1.5vw; text-decoration: none; font-size: 1.2vw;
+      box-shadow: 0 2px 12px #a100ff44;
+      transition: background 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    #restartBtn {
+      top: auto; left: 50%; bottom: 2vw; transform: translateX(-50%);
+      display: none;
+    }
+    .music-link:hover, #playMusicBtn:hover, #restartBtn:hover { background: #ff00aa; color: #fff; }
   </style>
 </head>
 <body>
 
-<div class="ticket">
-  <div class="hidden-message">👶💖 Jumeaux Filles 💖👶</div>
-  <canvas id="scratchCanvas"></canvas>
-  <div class="scratch-text" id="scratchText">🐣💝 Grattez ici pour découvrir... 🎀🎁</div>
-  <button id="resetBtn">🔁 Recommencer</button>
+  <!-- Musique en boucle -->
+  <audio id="backgroundMusic" preload="auto" loop>
+    <source src="https://github.com/jhuret1/aa/raw/main/It%27s%20a%20Small%20World%20%20%20%28La%20Maison%20des%20Poup%C3%A9es%29.mp3" type="audio/mpeg">
+    Votre navigateur ne supporte pas l'audio.
+  </audio>
+  <button id="playMusicBtn">🎵 Lancer la musique</button>
+  <button id="restartBtn">🔄 Recommencer</button>
+
+  <div class="baby-heads" aria-hidden="true"></div>
+
+  <div class="reveal-frame">
+    <canvas id="scratchCanvas"></canvas>
+    <video id="revealVideo" preload="auto" style="display:none;">
+      <source src="https://github.com/jhuret1/aa/raw/main/vid%C3%A9oraye.mp4" type="video/mp4">
+      Votre navigateur ne supporte pas la vidéo.
+    </video>
+    <div class="scratch-text" id="scratchText">Gratter ici 👶</div>
+  </div>
+
   <audio id="confettiSound" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
-  <audio id="bgMusic" src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" loop></audio>
-</div>
 
-<script>
-  const canvas = document.getElementById("scratchCanvas");
-  const ctx = canvas.getContext("2d");
-  const scratchText = document.getElementById("scratchText");
-  const resetBtn = document.getElementById("resetBtn");
-  const confettiSound = document.getElementById("confettiSound");
-  const bgMusic = document.getElementById("bgMusic");
-  let isDrawing = false;
-  let hasStarted = false;
-  let hasTriggered = false;
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    const palette = ['#00cfff', '#a100ff', '#ff00aa'];
+    const canvas = document.getElementById("scratchCanvas");
+    const ctx = canvas.getContext("2d");
+    const scratchText = document.getElementById("scratchText");
+    const revealVideo = document.getElementById("revealVideo");
+    const confettiSound = document.getElementById("confettiSound");
+    const backgroundMusic = document.getElementById("backgroundMusic");
+    const playMusicBtn = document.getElementById("playMusicBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const babyHeads = document.querySelector('.baby-heads');
+    let isDrawing = false, hasStarted = false, hasTriggered = false;
 
-  function drawScratchLayer() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Lancer la musique sur clic (autoplay bloqué sinon)
+    playMusicBtn.addEventListener('click', () => {
+      backgroundMusic.play();
+      playMusicBtn.style.display = 'none';
+    });
 
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    gradient.addColorStop(0, "#ffc3a0");
-    gradient.addColorStop(0.5, "#ffb6f9");
-    gradient.addColorStop(1, "#bae1ff");
-
-    ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "#ffffffcc";
-    ctx.font = `${Math.floor(canvas.width * 0.06)}px Arial`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("🐣💖💙🎀🎁", canvas.width / 2, canvas.height / 2);
-  }
-
-  window.addEventListener("resize", drawScratchLayer);
-  drawScratchLayer();
-
-  function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-    return { x, y };
-  }
-
-  function startScratch(e) {
-    isDrawing = true;
-    if (!hasStarted) {
-      hasStarted = true;
-      scratchText.style.opacity = "0";
-      bgMusic.play();
+    // Disperser les bébés autour du ticket
+    function scatterBabies() {
+      babyHeads.innerHTML = '';
+      const emojis = ['👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧'];
+      for(let i=0; i<emojis.length; i++) {
+        const span = document.createElement('span');
+        span.textContent = emojis[i];
+        // Position aléatoire autour du cadre (cercle autour du centre)
+        const angle = (i / emojis.length) * 2 * Math.PI;
+        const radius = Math.min(window.innerWidth, window.innerHeight) * 0.32 + (Math.random()-0.5)*30;
+        const cx = window.innerWidth/2;
+        const cy = window.innerHeight/2;
+        span.style.left = (cx + Math.cos(angle)*radius) + 'px';
+        span.style.top = (cy + Math.sin(angle)*radius) + 'px';
+        babyHeads.appendChild(span);
+      }
     }
-    scratch(e);
-  }
+    window.addEventListener('resize', scatterBabies);
+    scatterBabies();
 
-  function stopScratch() {
-    isDrawing = false;
-  }
+    // Image à gratter
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = "https://jhuret1.github.io/aa/julienjulie.jpg";
+    img.onload = drawScratchLayer;
 
-  function scratch(e) {
-    if (!isDrawing) return;
-    const { x, y } = getPos(e);
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.beginPath();
-    ctx.arc(x, y, 40, 0, Math.PI * 2);
-    ctx.fill();
-    checkScratchPercentage();
-  }
+    function drawScratchLayer() {
+      const frame = document.querySelector('.reveal-frame');
+      canvas.width = frame.clientWidth;
+      canvas.height = frame.clientHeight;
+      ctx.globalCompositeOperation = "source-over";
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  function checkScratchPercentage() {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let transparent = 0;
-    for (let i = 3; i < imageData.data.length; i += 4) {
-      if (imageData.data[i] === 0) transparent++;
+      // Centrage et crop portrait
+      const imgRatio = img.width / img.height;
+      const canvasRatio = canvas.width / canvas.height;
+      let sx = 0, sy = 0, sw = img.width, sh = img.height;
+      if (imgRatio > canvasRatio) {
+        sw = img.height * canvasRatio;
+        sx = (img.width - sw) / 2;
+      } else {
+        sh = img.width / canvasRatio;
+        sy = (img.height - sh) / 2;
+      }
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+      // Ajout d'emojis bébés sur le ticket à gratter
+      const babyEmojis = ["👧","👧","👧","👧","👧","👧"];
+      for(let i=0; i<6; i++) {
+        ctx.font = `${Math.floor(canvas.width * 0.10)}px Poppins`;
+        ctx.globalAlpha = 0.7;
+        ctx.fillText(babyEmojis[i],
+          (canvas.width/7)*(i+1),
+          canvas.height/7 + Math.sin(i)*canvas.height/10
+        );
+      }
+      ctx.globalAlpha = 1;
     }
 
-    const percent = transparent / (canvas.width * canvas.height) * 100;
-    if (percent > 30 && !hasTriggered) {
-      hasTriggered = true;
-      canvas.style.display = "none";
-      resetBtn.style.display = "block";
-      confettiSound.play();
-      triggerConfetti();
+    window.addEventListener("resize", drawScratchLayer);
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      return { x, y };
     }
-  }
 
-  canvas.addEventListener("mousedown", startScratch);
-  canvas.addEventListener("mousemove", scratch);
-  canvas.addEventListener("mouseup", stopScratch);
-  canvas.addEventListener("mouseleave", stopScratch);
-  canvas.addEventListener("touchstart", startScratch);
-  canvas.addEventListener("touchmove", scratch);
-  canvas.addEventListener("touchend", stopScratch);
-
-  resetBtn.addEventListener("click", () => {
-    canvas.style.display = "block";
-    resetBtn.style.display = "none";
-    scratchText.style.opacity = "1";
-    hasStarted = false;
-    hasTriggered = false;
-    drawScratchLayer();
-    bgMusic.pause();
-    bgMusic.currentTime = 0;
-  });
-
-  function triggerConfetti() {
-    const emojis = ["🎉", "💖", "👶", "🎀", "💝"];
-    for (let i = 0; i < 80; i++) {
-      const confetti = document.createElement("div");
-      confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      confetti.style.position = "fixed";
-      confetti.style.left = `${Math.random() * 100}vw`;
-      confetti.style.top = `${Math.random() * -20}vh`;
-      confetti.style.fontSize = `${Math.random() * 20 + 20}px`;
-      confetti.style.animation = `fall ${Math.random() * 2 + 3}s linear forwards`;
-      confetti.style.zIndex = 10;
-      document.body.appendChild(confetti);
-      setTimeout(() => confetti.remove(), 5000);
+    function startScratch(e) {
+      isDrawing = true;
+      if (!hasStarted) {
+        hasStarted = true;
+        scratchText.style.opacity = "0";
+      }
+      scratch(e);
     }
-  }
-</script>
 
+    function stopScratch() { isDrawing = false; }
+
+    function scratch(e) {
+      if (!isDrawing) return;
+      const { x, y } = getPos(e);
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+      ctx.arc(x, y, 40, 0, Math.PI * 2);
+      ctx.fill();
+      checkScratchPercentage();
+    }
+
+    function checkScratchPercentage() {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let transparent = 0;
+      for (let i = 3; i < imageData.data.length; i += 4) {
+        if (imageData.data[i] === 0) transparent++;
+      }
+      const percent = transparent / (canvas.width * canvas.height) * 100;
+      if (percent > 30 && !hasTriggered) {
+        hasTriggered = true;
+        showVideo();
+      }
+    }
+
+    canvas.addEventListener("mousedown", startScratch);
+    canvas.addEventListener("mousemove", scratch);
+    canvas.addEventListener("mouseup", stopScratch);
+    canvas.addEventListener("mouseleave", stopScratch);
+    canvas.addEventListener("touchstart", startScratch);
+    canvas.addEventListener("touchmove", scratch);
+    canvas.addEventListener("touchend", stopScratch);
+
+    function showVideo() {
+      scratchText.style.display = "none";
+      canvas.style.visibility = "hidden";
+      revealVideo.style.display = "block";
+      revealVideo.classList.add("active");
+      revealVideo.muted = false;
+      revealVideo.play().catch(err => {
+        console.warn("Erreur lecture vidéo :", err);
+      });
+      setTimeout(() => { revealVideo.requestFullscreen?.(); }, 800);
+
+      revealVideo.onended = () => {
+        revealVideo.classList.remove("active");
+        revealVideo.style.display = "none";
+        launchColorReveal();
+      };
+    }
+
+    // Reveal couleur safe (pas de flash rapide)
+    function launchColorReveal() {
+      (() => {
+        const colors = ['#00cfff', '#a100ff', '#ff00aa'];
+        let index = 0;
+        let start = null;
+        const totalDuration = 6000;
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = 0;
+        overlay.style.left = 0;
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.zIndex = '999999';
+        overlay.style.transition = 'background-color 1.2s cubic-bezier(.77,0,.18,1)';
+        overlay.style.pointerEvents = 'none';
+        document.body.appendChild(overlay);
+
+        function flash(timestamp) {
+          if (!start) start = timestamp;
+          const elapsed = timestamp - start;
+          const progress = elapsed / totalDuration;
+          const colorIndex = Math.floor(progress * (colors.length));
+          if (elapsed < totalDuration) {
+            overlay.style.backgroundColor = colors[colorIndex % colors.length];
+            requestAnimationFrame(flash);
+          } else {
+            overlay.style.backgroundColor = '#ff00aa';
+            setTimeout(() => {
+              overlay.remove();
+              triggerConfetti();
+              confettiSound.play();
+              showWinners();
+            }, 800);
+          }
+        }
+        requestAnimationFrame(flash);
+      })();
+    }
+
+    function triggerConfetti() {
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          confetti({
+            particleCount: 80,
+            spread: 90,
+            origin: { y: 0.6 },
+            colors: palette
+          });
+        }, i * 400);
+      }
+    }
+
+    const winners = [
+      "Johanna !!", "Fabrice", "Clem", "El Tio Nico", "Pauline", "Thierry",
+      "Juliette L", "Roxane", "Maxime", "Paca", "Juju R", "Vincent", "Alba", "Alba", "Rose"
+    ];
+
+    function showWinners() {
+      winners.forEach((name, i) => {
+        setTimeout(() => {
+          spawnWinner(name);
+        }, 500 + i * 400);
+      });
+      setTimeout(showFinalMessage, 500 + winners.length * 400 + 2000);
+    }
+
+    function spawnWinner(name) {
+      const el = document.createElement("div");
+      el.className = "winner";
+      el.textContent = name;
+      const side = Math.floor(Math.random() * 4);
+      let startX, startY, endX, endY;
+      switch (side) {
+        case 0:
+          startX = Math.random() * 80 + 10 + "vw"; startY = "-10vh";
+          endX = startX; endY = Math.random() * 60 + 20 + "vh"; break;
+        case 1:
+          startX = Math.random() * 80 + 10 + "vw"; startY = "110vh";
+          endX = startX; endY = Math.random() * 60 + 20 + "vh"; break;
+        case 2:
+          startX = "-20vw"; startY = Math.random() * 80 + 10 + "vh";
+          endX = Math.random() * 60 + 20 + "vw"; endY = startY; break;
+        case 3:
+          startX = "120vw"; startY = Math.random() * 80 + 10 + "vh";
+          endX = Math.random() * 60 + 20 + "vw"; endY = startY; break;
+      }
+      el.style.left = startX;
+      el.style.top = startY;
+      el.style.opacity = 0;
+      document.body.appendChild(el);
+      setTimeout(() => {
+        el.style.transition = "all 2.2s cubic-bezier(.77,0,.18,1)";
+        el.style.left = endX;
+        el.style.top = endY;
+        el.style.opacity = 1;
+      }, 10);
+      setTimeout(() => {
+        el.style.opacity = 0;
+        setTimeout(() => el.remove(), 2000);
+      }, 2200);
+    }
+
+    function showFinalMessage() {
+      const msg = document.createElement("div");
+      msg.className = "final-message";
+      msg.innerHTML = '100% FILLES !<div class="final-emojis">🎀👧👧🎀<br>👧👧👧👧<br>💖💖💖</div>';
+      document.body.appendChild(msg);
+
+      const thanks = document.createElement("div");
+      thanks.className = "thanks-message";
+      thanks.innerHTML = "Bravo à toutes les gagnantes !<br>Merci à tous pour votre soutien et votre enthousiasme 💕";
+      document.body.appendChild(thanks);
+
+      // Affiche le bouton recommencer
+      restartBtn.style.display = "block";
+    }
+
+    // Bouton recommencer
+    restartBtn.addEventListener('click', () => {
+      document.querySelectorAll('.final-message, .thanks-message, .winner').forEach(e => e.remove());
+      canvas.style.visibility = "visible";
+      canvas.style.display = "block";
+      scratchText.style.display = "block";
+      scratchText.style.opacity = "1";
+      revealVideo.classList.remove("active");
+      revealVideo.style.display = "none";
+      hasStarted = false;
+      hasTriggered = false;
+      drawScratchLayer();
+      restartBtn.style.display = "none";
+    });
+  </script>
 </body>
 </html>
