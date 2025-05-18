@@ -56,7 +56,7 @@
       100% { transform: scale(1.05) rotate(-10deg); }
     }
     .scratch-text {
-      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      position: absolute; left: 50%; top: 70%; transform: translate(-50%, -50%);
       color: #fff; font-size: 2.2vw; font-weight: bold; z-index: 5;
       background: rgba(0,0,0,0.35); padding: 1vw 2vw; border-radius: 2vw;
       box-shadow: 0 2px 12px #a100ff44;
@@ -553,8 +553,8 @@ function launchColorReveal() {
     }
 
     const winners = [
-      "Johanna !!", "Fabrice", "Clem", "El Tio Nico", "Pauline", "Thierry",
-      "Juliette L", "Roxane", "Maxime", "Paca", "Juju R", "Vincent", "Alba", "Alba", "Rose"
+      "Bravo aux gagnants des pronostics 😁","Johanna !!", "Fabrice", "Clem", "El Tio Nico", "Pauline", "Thierry",
+      "Juliette L", "Roxane", "Maxime", "Paca", "Juju R", "Vincent", "Alba", "Rose"
     ];
 
 function showWinners() {
@@ -662,7 +662,7 @@ function drawWinnersOnCanvas() {
 
       const thanks = document.createElement("div");
       thanks.className = "thanks-message";
-      thanks.innerHTML = "Bravo à toutes les gagnantes !<br>Merci à tous pour votre soutien et votre enthousiasme 💕";
+      thanks.innerHTML = "Bravo à toutes les gagnants !<br>Merci à tous pour votre soutien et votre enthousiasme 💕";
       document.body.appendChild(thanks);
 
       // Affiche le bouton recommencer
