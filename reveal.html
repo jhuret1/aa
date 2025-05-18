@@ -473,9 +473,10 @@ function drawScratchLayer() {
     }
 
     // Reveal couleur safe (pas de flash rapide)
+// Remplacez la fonction launchColorReveal actuelle par celle-ci
 function launchColorReveal() {
   const colors = ['#00cfff', '#a100ff', '#ff00aa'];
-  const emojis = ['👶', '👧', '👧']; // Emojis pour chaque secteur
+  const emojis = ['👦👦', '👦👧', '👧👧']; // Bleu=garçons, Violet=mixte, Rose=filles
   let index = 0;
   let start = null;
   const totalDuration = 6000;
@@ -504,13 +505,14 @@ function launchColorReveal() {
     canvas.style.transform = 'translate(-50%, -50%)';
     canvas.style.zIndex = 999999;
     canvas.style.pointerEvents = 'none';
+    // Ajouter une ombre pour plus de relief
+    canvas.style.boxShadow = '0 0 40px rgba(161, 0, 255, 0.5)';
     document.body.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
-    const colors = ['#00cfff', '#a100ff', '#ff00aa'];
     const overlays = [0.5, 0.5, 0.5]; // darkness per sector
     let highlightIndex = 0;
-    let delay = 300;
+    let delay = 600; // Démarrage plus lent
     let elapsed = 0;
     const totalDuration = 8000;
     
@@ -537,24 +539,30 @@ function launchColorReveal() {
         ctx.fillStyle = colors[i];
         ctx.fill();
         
-        // Emoji only if highlighted
+        // Emoji only if highlighted or always visible with lower opacity
+        const midAngle = startAngle + (Math.PI * 2) / 6;
+        const emojiX = cx + r * 0.5 * Math.cos(midAngle);
+        const emojiY = cy + r * 0.5 * Math.sin(midAngle);
+        ctx.font = `${canvas.width * 0.09}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
         if (overlays[i] === 0) {
-          const midAngle = startAngle + (Math.PI * 2) / 6;
-          const emojiX = cx + r * 0.5 * Math.cos(midAngle);
-          const emojiY = cy + r * 0.5 * Math.sin(midAngle);
-          ctx.font = `${canvas.width * 0.09}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#fff'; // bright and visible
+          // Highlighted sector - full visibility
+          ctx.fillStyle = '#fff'; 
+          ctx.fillText(emojis[i], emojiX, emojiY);
+        } else {
+          // Non-highlighted sectors - show emojis with lower opacity
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
           ctx.fillText(emojis[i], emojiX, emojiY);
         }
         
-        // Overlay
+        // Overlay - moins opaque pour éviter des flashs trop intenses
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, r, startAngle, endAngle);
         ctx.closePath();
-        ctx.fillStyle = `rgba(0, 0, 0, ${overlays[i]})`;
+        ctx.fillStyle = `rgba(0, 0, 0, ${overlays[i] * 0.7})`; // Moins opaque
         ctx.fill();
       }
       
@@ -577,29 +585,74 @@ function launchColorReveal() {
       elapsed += delay;
 
       if (elapsed >= totalDuration) {
-        // Stop on pink (index 2 - le dernier secteur pour les filles)
+        // Stop sur le rose (index 2 - le secteur filles)
         overlays.fill(0.5);
         overlays[2] = 0;
         drawRoulette();
         
-        // Une fois la roulette terminée, lancer les festivités
+        // Animation finale : agrandir légèrement le secteur gagnant
         setTimeout(() => {
-          // Ajouter une animation de disparition progressive
-          canvas.style.transition = 'opacity 1s ease-out';
-          canvas.style.opacity = 0;
-          setTimeout(() => canvas.remove(), 1000);
+          // Afficher un texte "C'est des filles!" en dessous de la roulette
+          const resultText = document.createElement('div');
+          resultText.style.position = 'fixed';
+          resultText.style.top = '65%';
+          resultText.style.left = '50%';
+          resultText.style.transform = 'translateX(-50%)';
+          resultText.style.fontSize = '2rem';
+          resultText.style.fontWeight = 'bold';
+          resultText.style.color = '#fff';
+          resultText.style.textShadow = '0 0 10px rgba(255, 0, 170, 0.8)';
+          resultText.style.zIndex = '1000000';
+          resultText.textContent = 'C\'est des filles!';
+          resultText.style.opacity = '0';
+          resultText.style.transition = 'opacity 1s ease-in';
+          document.body.appendChild(resultText);
           
-          // Déclencher les confettis
-          triggerConfetti();
+          // Faire apparaître le texte
+          setTimeout(() => {
+            resultText.style.opacity = '1';
+          }, 100);
           
-          // Lancer l'affichage des gagnants
-          setTimeout(showWinners, 800);
-        }, 1200);
+          // Une fois la roulette terminée, lancer les festivités
+          setTimeout(() => {
+            // Faire disparaître progressivement la roulette et le texte
+            canvas.style.transition = 'opacity 1s ease-out';
+            canvas.style.opacity = '0';
+            resultText.style.transition = 'opacity 1s ease-out';
+            resultText.style.opacity = '0';
+            
+            setTimeout(() => {
+              canvas.remove();
+              resultText.remove();
+              
+              // Déclencher les confettis
+              triggerConfetti();
+              
+              // Lancer l'affichage des gagnants
+              setTimeout(showWinners, 800);
+            }, 1200);
+          }, 2500); // Un peu plus de temps pour apprécier le résultat
+        }, 500);
         
         return;
       }
 
-      delay = Math.max(70, delay * 0.85); // accelerate but not too fast
+      // Réduire progressivement le délai pour accélérer, mais garder un minimum
+      // Courbe d'accélération plus douce
+      if (elapsed < totalDuration * 0.3) {
+        // Phase initiale : ralentir un peu pour donner du suspense
+        delay = delay * 0.97;
+      } else if (elapsed < totalDuration * 0.7) {
+        // Phase d'accélération progressive
+        delay = delay * 0.92;
+      } else {
+        // Phase finale : accélération plus rapide
+        delay = delay * 0.88;
+      }
+      
+      // Limiter la vitesse maximum pour éviter les effets épileptiques
+      delay = Math.max(100, delay);
+      
       setTimeout(highlightNext, delay);
     }
 
