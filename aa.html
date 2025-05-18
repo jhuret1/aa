@@ -47,7 +47,11 @@
       animation: babyBounce 2s infinite alternate;
       opacity: 0.85;
     }
-    @keyframes babyBounce { to { transform: scale(1.15) rotate(-10deg); } }
+    @keyframes babyBounce { 
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.15) rotate(10deg); }
+      100% { transform: scale(1.05) rotate(-10deg); }
+    }
     .scratch-text {
       position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
       color: #fff; font-size: 2.2vw; font-weight: bold; z-index: 5;
@@ -56,6 +60,15 @@
       animation: bounce 1.5s infinite alternate;
       pointer-events: none;
       text-shadow: 2px 2px 8px #a100ff;
+    }
+    @media (max-width: 600px) {
+      .scratch-text {
+        font-size: 5vw;
+        padding: 2vw 4vw;
+      }
+      .baby-heads span {
+        font-size: 6vw;
+      }
     }
     @keyframes bounce { to { transform: translate(-50%, -50%) scale(1.08); } }
     #scratchCanvas {
@@ -80,6 +93,7 @@
       box-shadow: 0 8px 40px #a100ff99;
       transition: all 1s cubic-bezier(.77,0,.18,1);
       display: none;
+      object-fit: contain;
     }
     #revealVideo.active {
       opacity: 1;
@@ -131,7 +145,22 @@
       text-align: center;
       box-shadow: 0 2px 12px #a100ff44;
     }
-    .music-link, #playMusicBtn, #restartBtn {
+    @media (max-width: 600px) {
+      .final-message {
+        font-size: 8vw;
+      }
+      .final-emojis {
+        font-size: 6vw;
+      }
+      .thanks-message {
+        font-size: 4vw;
+        width: 80%;
+      }
+      .winner {
+        font-size: 5vw;
+      }
+    }
+    .music-link, #playMusicBtn, #restartBtn, #playVideoBtn {
       position: fixed; top: 2vw; left: 2vw; z-index: 10000;
       background: #fff; color: #a100ff; font-weight: bold; border-radius: 1vw;
       padding: 0.7vw 1.5vw; text-decoration: none; font-size: 1.2vw;
@@ -144,7 +173,25 @@
       top: auto; left: 50%; bottom: 2vw; transform: translateX(-50%);
       display: none;
     }
-    .music-link:hover, #playMusicBtn:hover, #restartBtn:hover { background: #ff00aa; color: #fff; }
+    #playVideoBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 5vw;
+      padding: 3vw 4vw;
+      border-radius: 2vw;
+      display: none;
+      z-index: 11;
+    }
+    @media (max-width: 600px) {
+      .music-link, #playMusicBtn, #restartBtn {
+        font-size: 3vw;
+        padding: 1.5vw 3vw;
+        border-radius: 2vw;
+      }
+    }
+    .music-link:hover, #playMusicBtn:hover, #restartBtn:hover, #playVideoBtn:hover { background: #ff00aa; color: #fff; }
   </style>
 </head>
 <body>
@@ -161,10 +208,11 @@
 
   <div class="reveal-frame">
     <canvas id="scratchCanvas"></canvas>
-    <video id="revealVideo" preload="auto" style="display:none;">
+    <video id="revealVideo" preload="auto" playsinline>
       <source src="https://github.com/jhuret1/aa/raw/main/vid%C3%A9oraye.mp4" type="video/mp4">
       Votre navigateur ne supporte pas la vidéo.
     </video>
+    <button id="playVideoBtn">▶️ Voir la vidéo</button>
     <div class="scratch-text" id="scratchText">Gratter ici 👶</div>
   </div>
 
@@ -177,33 +225,67 @@
     const ctx = canvas.getContext("2d");
     const scratchText = document.getElementById("scratchText");
     const revealVideo = document.getElementById("revealVideo");
+    const playVideoBtn = document.getElementById("playVideoBtn");
     const confettiSound = document.getElementById("confettiSound");
     const backgroundMusic = document.getElementById("backgroundMusic");
     const playMusicBtn = document.getElementById("playMusicBtn");
     const restartBtn = document.getElementById("restartBtn");
     const babyHeads = document.querySelector('.baby-heads');
     let isDrawing = false, hasStarted = false, hasTriggered = false;
+    let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     // Lancer la musique sur clic (autoplay bloqué sinon)
     playMusicBtn.addEventListener('click', () => {
-      backgroundMusic.play();
+      backgroundMusic.play().catch(error => {
+        console.warn("Erreur de lecture de la musique:", error);
+      });
       playMusicBtn.style.display = 'none';
     });
 
-    // Disperser les bébés autour du ticket
+    // Gérer le bouton de lecture vidéo
+    playVideoBtn.addEventListener('click', () => {
+      revealVideo.play().then(() => {
+        playVideoBtn.style.display = 'none';
+      }).catch(err => {
+        console.warn("Erreur lecture vidéo:", err);
+      });
+    });
+
+    // Disperser les emojis autour du ticket
     function scatterBabies() {
       babyHeads.innerHTML = '';
-      const emojis = ['👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧','👧'];
+      const emojis = [
+        '👶', '👶', '👶', '👶', '👶', '👶', '👶', '👶', '👶', '👶',
+        '👧', '👧', '👧', '👧', '👧', '👧', '👧', '👧', '👧', '👧', 
+        '👦', '👦', '👦', '👦', '👦', '👦', '👦', '👦', '👦', '👦',
+        '🎀', '🎀', '🎀', '🎀', '🎀', '🍼', '🍼', '🍼', '🍼', '🍼',
+        '🧸', '🧸', '🧸', '🧸', '🧸', '👼', '👼', '👼', '👼', '👼',
+        '👣', '👣', '👣', '🍭', '🍭', '🍭', '🎈', '🎈', '🎈', '🎈',
+        '🎉', '🎉', '🎉', '🎉', '🎁', '🎁', '🎁', '🧩', '🧩', '🧩',
+        '🚼', '🚼', '🚼', '🧪', '👨‍👩‍👧', '👨‍👩‍👦‍👦', '👨‍👩‍👧‍👧', '👨‍👩‍👧‍👦', '👪', '👨‍👩‍👦'
+      ];
       for(let i=0; i<emojis.length; i++) {
         const span = document.createElement('span');
         span.textContent = emojis[i];
-        // Position aléatoire autour du cadre (cercle autour du centre)
-        const angle = (i / emojis.length) * 2 * Math.PI;
-        const radius = Math.min(window.innerWidth, window.innerHeight) * 0.32 + (Math.random()-0.5)*30;
+        
+        // Position vraiment aléatoire sur toute la page
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = Math.random() * 0.8; // 0-80% de la distance maximale
+        const radius = Math.min(window.innerWidth, window.innerHeight) * distance;
         const cx = window.innerWidth/2;
         const cy = window.innerHeight/2;
+        
         span.style.left = (cx + Math.cos(angle)*radius) + 'px';
         span.style.top = (cy + Math.sin(angle)*radius) + 'px';
+        
+        // Taille aléatoire pour les emojis
+        const size = 1.5 + Math.random() * 4;
+        span.style.fontSize = size + 'vw';
+        
+        // Animation légèrement aléatoire
+        span.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+        span.style.animationDelay = (Math.random() * 1) + 's';
+        
         babyHeads.appendChild(span);
       }
     }
@@ -236,8 +318,8 @@
       }
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
-      // Ajout d'emojis bébés sur le ticket à gratter
-      const babyEmojis = ["👧","👧","👧","👧","👧","👧"];
+    // Ajout d'emojis bébés sur le ticket à gratter
+      const babyEmojis = ["👧","👦","🍼","👶","🧸","🎀"];
       for(let i=0; i<6; i++) {
         ctx.font = `${Math.floor(canvas.width * 0.10)}px Poppins`;
         ctx.globalAlpha = 0.7;
@@ -306,14 +388,33 @@
       revealVideo.style.display = "block";
       revealVideo.classList.add("active");
       revealVideo.muted = false;
-      revealVideo.play().catch(err => {
-        console.warn("Erreur lecture vidéo :", err);
-      });
-      setTimeout(() => { revealVideo.requestFullscreen?.(); }, 800);
+      
+      // Sur mobile, afficher un bouton de lecture au lieu de lancer automatiquement
+      if (isMobile) {
+        playVideoBtn.style.display = "block";
+      } else {
+        revealVideo.play().catch(err => {
+          console.warn("Erreur lecture vidéo :", err);
+          // Fallback: afficher un bouton si la lecture automatique échoue
+          playVideoBtn.style.display = "block";
+        });
+      }
+
+      // Ne pas essayer de passer en plein écran automatiquement sur mobile
+      if (!isMobile) {
+        setTimeout(() => { 
+          try {
+            revealVideo.requestFullscreen(); 
+          } catch (err) {
+            console.warn("Erreur plein écran:", err);
+          }
+        }, 800);
+      }
 
       revealVideo.onended = () => {
         revealVideo.classList.remove("active");
         revealVideo.style.display = "none";
+        playVideoBtn.style.display = "none";
         launchColorReveal();
       };
     }
@@ -349,7 +450,9 @@
             setTimeout(() => {
               overlay.remove();
               triggerConfetti();
-              confettiSound.play();
+              confettiSound.play().catch(err => {
+                console.warn("Erreur lecture son:", err);
+              });
               showWinners();
             }, 800);
           }
@@ -445,6 +548,7 @@
       scratchText.style.opacity = "1";
       revealVideo.classList.remove("active");
       revealVideo.style.display = "none";
+      playVideoBtn.style.display = "none";
       hasStarted = false;
       hasTriggered = false;
       drawScratchLayer();
